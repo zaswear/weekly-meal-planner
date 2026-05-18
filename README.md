@@ -1,62 +1,85 @@
-# 🍳 Weekly Meal Planner
+# Weekly Meal Planner
 
-> Plan semanal de comidas interactivo con lista de la compra y recetas detalladas. Sin frameworks, sin dependencias, un solo archivo.
+> Plan semanal de comidas interactivo con lista de la compra automática y recetas detalladas. Sin frameworks, sin dependencias externas, un solo archivo HTML.
 
 ![HTML](https://img.shields.io/badge/HTML-E34F26?style=flat&logo=html5&logoColor=white)
 ![CSS](https://img.shields.io/badge/CSS-1572B6?style=flat&logo=css3&logoColor=white)
 ![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?style=flat&logo=javascript&logoColor=black)
 ![No dependencies](https://img.shields.io/badge/dependencies-none-brightgreen)
 
-## ✨ Características
+## Características
 
-- **Lista de la compra interactiva** — checkboxes por categoría, contador de progreso y botón de impresión
-- **Plan semanal visual** — grid de 7 días × 3 comidas (desayuno, comida, cena) con calorías por día
-- **21 recetas completas** — ingredientes, pasos y consejo de chef para cada comida
-- **Modal de receta** — se abre al pulsar cualquier comida del plan
-- **Acordeón de recetas** — vista alternativa con todas las recetas expandibles
+- **Plan semanal generado al azar** — 7 días × 2 turnos (comida + cena), sin repetir receta
+- **1097 recetas en español** — base de datos local extraída de Arguiñano y El Comidista
+- **Lista de la compra automática** — se genera a partir de los ingredientes de la semana, agrupada por categorías con checkboxes y contador de progreso
+- **Modal de receta** — ingredientes con cantidades y pasos de elaboración al pulsar cualquier comida
+- **Acordeón de recetas** — vista alternativa con todas las recetas de la semana expandibles
+- **Persistencia en localStorage** — el plan y la lista de la compra se guardan entre sesiones
 - **Diseño mediterráneo** — paleta terracota, tipografía editorial, 100% responsive
 - **Optimizado para imprimir** — la lista de la compra se imprime limpia
 
-## 🚀 Uso
+## Uso
 
-No hay nada que instalar. Descarga o clona el repositorio y abre `index.html` en el navegador.
+No hay nada que instalar. Clona el repositorio y abre `index.html` en el navegador.
 
 ```bash
-git clone https://github.com/tuusuario/weekly-meal-planner.git
+git clone https://github.com/zaswear/weekly-meal-planner.git
 cd weekly-meal-planner
-open index.html
+open index.html   # o arrastra index.html al navegador
 ```
 
-O usa directamente la versión desplegada en GitHub Pages: `https://tuusuario.github.io/weekly-meal-planner`
+Al cargar, si hay un plan guardado se restaura. El botón **Nueva semana** genera un plan completamente nuevo con recetas aleatorias.
 
-## 📁 Estructura
+## Estructura
 
 ```
 weekly-meal-planner/
-├── index.html      # App completa (HTML + CSS + JS en un solo archivo)
-├── CLAUDE.md       # Documentación técnica para desarrollo con IA
+├── index.html          # App completa (HTML + CSS + JS en un solo archivo)
+├── recetas.json        # Base de datos local: 1097 recetas en español
+├── parse_recipes.py    # Script Python para regenerar recetas.json desde los markdown fuente
+├── CLAUDE.md           # Documentación técnica para desarrollo con IA
 └── README.md
 ```
 
-## 🔧 Personalización
+## Base de datos de recetas
 
-Todos los datos están en el bloque `<script>` de `index.html`, claramente separados de la lógica:
+Las recetas se sirven desde `recetas.json` — un fichero estático generado por `parse_recipes.py` a partir de los libros de cocina en formato markdown. Cada receta tiene la estructura:
 
-| Objeto | Qué contiene |
+```json
+{
+  "id": "r0001",
+  "name": "Nombre de la receta",
+  "ingredients": [
+    { "qty": "200 g", "name": "pollo" }
+  ],
+  "steps": ["Paso 1...", "Paso 2..."],
+  "tip": ""
+}
+```
+
+Para regenerar la base de datos desde nuevos ficheros fuente, coloca los markdown en la carpeta `recetas/` y ejecuta:
+
+```bash
+python3 parse_recipes.py
+```
+
+## Estado en localStorage
+
+| Clave | Contenido |
 |---|---|
-| `SHOPPING` | Categorías e ítems de la lista de la compra |
-| `RECIPES` | Las 21 recetas con ingredientes, pasos y consejos |
-| `WEEK` | Qué receta corresponde a cada día y tipo de comida |
+| `mealplanner_recipes` | Plan de la semana actual (`{ "L-C": {...}, "L-N": {...}, ... }`) |
+| `mealplanner_shopping` | Lista de la compra generada |
+| `mealplanner_checked` | Ítems marcados como comprados |
 
-Consulta [`CLAUDE.md`](./CLAUDE.md) para una guía detallada de modificación.
+Para resetear completamente: abre la consola del navegador y ejecuta `localStorage.clear()`.
 
-## 🌐 Deploy en GitHub Pages
+## Deploy en GitHub Pages
 
 1. Ve a **Settings → Pages**
 2. Source: `Deploy from a branch`
-3. Branch: `main` / `root`
-4. La app estará disponible en `https://tuusuario.github.io/weekly-meal-planner`
+3. Branch: `main` / raíz `/`
+4. La app estará disponible en `https://zaswear.github.io/weekly-meal-planner`
 
-## 📄 Licencia
+## Licencia
 
 MIT

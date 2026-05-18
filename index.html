@@ -818,12 +818,15 @@ function openRecipe(id) {
   if (!r) return;
   document.getElementById('modal-content').innerHTML = `
     <div class="recipe-modal-header" style="position:relative;">
-      <button class="close-btn" onclick="document.getElementById('modal').classList.remove('open')">✕</button>
+      <button class="close-btn" id="close-recipe-btn">✕</button>
       <div class="recipe-modal-type">${r.tipo}</div>
       <div class="recipe-modal-title">${r.name}</div>
     </div>
     <div class="recipe-body">${buildRecipeBody(r)}</div>
   `;
+  document.getElementById('close-recipe-btn').addEventListener('click', () => {
+    document.getElementById('modal').classList.remove('open');
+  });
   document.getElementById('modal').classList.add('open');
 }
 
