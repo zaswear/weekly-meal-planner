@@ -333,22 +333,59 @@
     border-radius: 7px;
     border-left: 3px solid var(--sand-dark);
   }
-  .ing-qty { font-weight: 600; color: var(--terracotta); min-width: 60px; flex-shrink: 0; }
-  .ing-name { color: var(--charcoal); }
-  .steps-list { list-style: none; display: flex; flex-direction: column; gap: 10px; margin-bottom: 22px; }
-  .step-item { display: flex; gap: 12px; align-items: flex-start; font-size: 0.88rem; line-height: 1.5; }
-  .step-num {
+  .ing-qty {
     background: var(--terracotta);
     color: white;
-    border-radius: 50%;
-    width: 26px; height: 26px;
+    font-weight: 700;
+    font-size: 0.78rem;
+    padding: 2px 7px;
+    border-radius: 5px;
+    min-width: 52px;
+    text-align: center;
+    flex-shrink: 0;
+    align-self: center;
+  }
+  .ing-name { color: var(--charcoal); }
+  .steps-prose { display: flex; flex-direction: column; gap: 10px; margin-bottom: 22px; }
+  .step-para { font-size: 0.88rem; line-height: 1.65; color: var(--charcoal); margin: 0; }
+  .ing-emoji { font-size: 1rem; flex-shrink: 0; width: 22px; text-align: center; }
+  /* ── Búsqueda ── */
+  .search-header { margin-bottom: 4px; }
+  .search-subtitle { color: var(--text-muted); font-size: 0.83rem; margin: 4px 0 0; }
+  .search-box-wrap { position: sticky; top: 56px; z-index: 10; background: var(--warm-white); padding: 12px 0 10px; margin-bottom: 8px; }
+  .search-input {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 12px 16px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 1rem;
+    border: 2px solid var(--border);
+    border-radius: 12px;
+    background: var(--cream);
+    color: var(--charcoal);
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .search-input:focus { border-color: var(--terracotta); }
+  .search-results { display: grid; gap: 10px; }
+  .search-empty { color: var(--text-muted); font-size: 0.9rem; text-align: center; padding: 40px 0; }
+  .search-card {
+    background: var(--cream);
+    border-radius: 12px;
+    padding: 14px 16px;
+    cursor: pointer;
+    border: 1px solid var(--border);
+    transition: border-color 0.15s, box-shadow 0.15s;
     display: flex;
     align-items: center;
-    justify-content: center;
-    font-size: 0.78rem;
-    font-weight: 700;
-    flex-shrink: 0;
+    gap: 14px;
   }
+  .search-card:hover { border-color: var(--terracotta); box-shadow: 0 2px 8px rgba(180,80,40,0.1); }
+  .search-card-name { font-weight: 600; font-size: 0.92rem; color: var(--charcoal); flex: 1; }
+  .search-card-ings { font-size: 0.78rem; color: var(--text-muted); margin-top: 2px; }
+  .search-count { font-size: 0.8rem; color: var(--text-muted); margin-bottom: 10px; }
+  mark { background: #ffe49a; border-radius: 3px; padding: 0 2px; }
+
   .tip-box {
     background: linear-gradient(135deg, #f0f7ea, #e8f3de);
     border: 1px solid #c5ddb0;
@@ -423,6 +460,7 @@
     <button class="tab-btn active" onclick="showTab('compra', this)"><span class="tab-icon">🛒</span>Lista de la compra</button>
     <button class="tab-btn" onclick="showTab('plan', this)"><span class="tab-icon">📅</span>Plan semanal</button>
     <button class="tab-btn" onclick="showTab('recetas', this)"><span class="tab-icon">📖</span>Todas las recetas</button>
+    <button class="tab-btn" onclick="showTab('buscar', this)"><span class="tab-icon">🔍</span>Buscar</button>
   </div>
   <button id="btn-new-week" class="new-week-btn" onclick="generateNewWeek()">🔄 Nueva semana</button>
 </nav>
@@ -451,6 +489,18 @@
   <section id="sec-recetas" class="section">
     <h2 class="week-title">📖 Todas las Recetas</h2>
     <div id="all-recipes-list" style="display:grid;gap:14px;"></div>
+  </section>
+
+  <!-- ─── SECCIÓN 4: BUSCAR ─── -->
+  <section id="sec-buscar" class="section">
+    <div class="search-header">
+      <h2 class="week-title" style="margin:0">🔍 Buscar recetas</h2>
+      <p class="search-subtitle">1202 recetas disponibles</p>
+    </div>
+    <div class="search-box-wrap">
+      <input id="search-input" class="search-input" type="search" placeholder="Busca por nombre o ingrediente..." autocomplete="off" oninput="onSearch(this.value)">
+    </div>
+    <div id="search-results" class="search-results"></div>
   </section>
 
 </main>
@@ -540,6 +590,104 @@ function categorizeIngredient(name) {
   if (/azúcar|miel|sirope|chocolate|cacao|mermelada|levadura|bizcocho/.test(l))
     return '🍯 Dulces y repostería';
   return '🛒 Otros';
+}
+
+function ingredientEmoji(name) {
+  const l = name.toLowerCase();
+  const map = [
+    // Verduras
+    [/cebolla/, '🧅'],
+    [/ajo/, '🧄'],
+    [/tomate/, '🍅'],
+    [/patata|papa/, '🥔'],
+    [/zanahoria/, '🥕'],
+    [/pimiento/, '🫑'],
+    [/maíz/, '🌽'],
+    [/brócoli|brocoli/, '🥦'],
+    [/lechuga|espinaca|acelga|col\b|repollo|coliflor/, '🥬'],
+    [/champiñón|seta\b|setas\b/, '🍄'],
+    [/pepino/, '🥒'],
+    [/aguacate/, '🥑'],
+    [/berenjena/, '🍆'],
+    [/calabacín|calabaza/, '🎃'],
+    [/guisante|judía|judias|garbanzo|lenteja|alubia|legumbre/, '🫛'],
+    [/puerro|apio/, '🌿'],
+    [/espárrago|alcachofa|remolacha|nabo|alcaparra/, '🌿'],
+    // Frutas
+    [/limón/, '🍋'],
+    [/naranja/, '🍊'],
+    [/manzana/, '🍎'],
+    [/pera/, '🍐'],
+    [/plátano/, '🍌'],
+    [/fresa|fresón/, '🍓'],
+    [/uva/, '🍇'],
+    [/melocotón|durazno/, '🍑'],
+    [/cereza|guinda/, '🍒'],
+    [/mango/, '🥭'],
+    [/piña/, '🍍'],
+    [/coco/, '🥥'],
+    [/sandía/, '🍉'],
+    [/melón/, '🍈'],
+    [/arándano|frambuesa|mora\b/, '🫐'],
+    [/higo|membrillo|granada\b/, '🍈'],
+    [/lima\b/, '🍋'],
+    [/aceituna|oliva/, '🫒'],
+    // Proteínas animales
+    [/huevo/, '🥚'],
+    [/pollo/, '🍗'],
+    [/cerdo|costilla|lomo\b|panceta|papada/, '🥓'],
+    [/jamón|bacon/, '🥓'],
+    [/ternera|buey|vaca\b|carne\b|filete|solomillo|entrecot/, '🥩'],
+    [/cordero|cabrito/, '🥩'],
+    [/pavo|pato\b|conejo/, '🍖'],
+    [/chorizo|salchicha|morcilla|embutido|salami/, '🌭'],
+    [/salmón/, '🐟'],
+    [/atún|bonito/, '🐟'],
+    [/merluza|bacalao|lubina|dorada|pescado|sardina|boquerón|anchoa|trucha|rape|rodaballo/, '🐟'],
+    [/gambas|langostino|langosta|cigala|camarón/, '🦐'],
+    [/mejillón|almeja|berberecho|ostra/, '🦪'],
+    [/calamar|sepia|pulpo/, '🦑'],
+    // Lácteos
+    [/leche/, '🥛'],
+    [/queso/, '🧀'],
+    [/mantequilla/, '🧈'],
+    [/nata|crema de leche/, '🥛'],
+    [/yogur/, '🥛'],
+    // Cereales y pan
+    [/harina/, '🌾'],
+    [/pan\b|tostada|baguette|rebanada/, '🍞'],
+    [/arroz/, '🍚'],
+    [/pasta\b|macarrón|espagueti|fideo|tallarín/, '🍝'],
+    [/avena|cuscús|quinoa|cebada|mijo/, '🌾'],
+    // Condimentos y líquidos
+    [/aceite/, '🫙'],
+    [/vinagre/, '🫙'],
+    [/sal\b|salsa de soja|soja/, '🧂'],
+    [/pimienta/, '🌶️'],
+    [/mostaza|ketchup|mayonesa/, '🫙'],
+    [/caldo/, '🍲'],
+    [/vino\b/, '🍷'],
+    [/cerveza/, '🍺'],
+    [/agua\b/, '💧'],
+    [/zumo|jugo/, '🥤'],
+    // Especias y hierbas
+    [/perejil|cilantro|albahaca|menta|tomillo|romero|laurel|orégano|eneldo|cebollino/, '🌿'],
+    [/canela|vainilla|comino|cúrcuma|pimentón|curry|jengibre|clavo|azafrán|nuez moscada|guindilla/, '🌶️'],
+    // Frutos secos
+    [/almendra|nuez|avellana|piñón|cacahuete|anacardo|pistacho/, '🌰'],
+    // Dulces
+    [/azúcar/, '🍬'],
+    [/miel/, '🍯'],
+    [/chocolate|cacao/, '🍫'],
+    [/mermelada/, '🍓'],
+    [/levadura/, '🌾'],
+    // Hongos y otros
+    [/trufa/, '🍄'],
+  ];
+  for (const [re, emoji] of map) {
+    if (re.test(l)) return emoji;
+  }
+  return '🍽️';
 }
 
 const CAT_ORDER = [
@@ -838,12 +986,12 @@ function buildRecipeBody(r) {
   return `
     <p class="recipe-section-title">Ingredientes</p>
     <ul class="ingredients-list">
-      ${r.ingredients.map(i => `<li><span class="ing-qty">${i.qty || '—'}</span><span class="ing-name">${i.name}</span></li>`).join('')}
+      ${r.ingredients.map(i => `<li><span class="ing-emoji">${ingredientEmoji(i.name)}</span><span class="ing-qty">${i.qty || '—'}</span><span class="ing-name">${i.name}</span></li>`).join('')}
     </ul>
     <p class="recipe-section-title">Elaboración</p>
-    <ol class="steps-list">
-      ${r.steps.map((s, i) => `<li class="step-item"><span class="step-num">${i + 1}</span><span>${s}</span></li>`).join('')}
-    </ol>
+    <div class="steps-prose">
+      ${r.steps.map(s => `<p class="step-para">${s}</p>`).join('')}
+    </div>
     ${tip}
   `;
 }
@@ -859,6 +1007,70 @@ document.addEventListener('keydown', e => {
 });
 
 // ════════════════════════════════════════════════
+//  BÚSQUEDA
+// ════════════════════════════════════════════════
+function highlight(text, query) {
+  if (!query) return text;
+  const escaped = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  return text.replace(new RegExp(`(${escaped})`, 'gi'), '<mark>$1</mark>');
+}
+
+function onSearch(raw) {
+  const q = raw.trim().toLowerCase();
+  const container = document.getElementById('search-results');
+
+  if (!q) {
+    container.innerHTML = `<p class="search-empty">Escribe para buscar entre las ${allRecipes.length} recetas</p>`;
+    return;
+  }
+
+  const results = allRecipes.filter(r => {
+    if (r.name.toLowerCase().includes(q)) return true;
+    return r.ingredients.some(i => i.name.toLowerCase().includes(q));
+  }).slice(0, 60);
+
+  if (!results.length) {
+    container.innerHTML = `<p class="search-empty">Sin resultados para "<strong>${raw}</strong>"</p>`;
+    return;
+  }
+
+  container.innerHTML = `
+    <p class="search-count">${results.length === 60 ? 'Primeros 60 resultados' : results.length + ' resultado' + (results.length === 1 ? '' : 's')}</p>
+    ${results.map(r => {
+      const matchedIngs = r.ingredients
+        .filter(i => i.name.toLowerCase().includes(q))
+        .slice(0, 4)
+        .map(i => i.name).join(', ');
+      return `
+        <div class="search-card" onclick="openRecipeById('${r.id}')">
+          <div style="flex:1;min-width:0">
+            <div class="search-card-name">${highlight(r.name, raw)}</div>
+            ${matchedIngs ? `<div class="search-card-ings">🥘 ${highlight(matchedIngs, raw)}</div>` : ''}
+          </div>
+          <span style="color:var(--text-muted);font-size:1.1rem">›</span>
+        </div>`;
+    }).join('')}
+  `;
+}
+
+function openRecipeById(id) {
+  const r = allRecipes.find(r => r.id === id);
+  if (!r) return;
+  // Abre el modal con la receta del banco global (sin slot asignado)
+  document.getElementById('modal-content').innerHTML = `
+    <div class="recipe-modal-header" style="position:relative;">
+      <button class="close-btn" id="close-recipe-btn">✕</button>
+      <div class="recipe-modal-title" style="padding-top:4px">${r.name}</div>
+    </div>
+    <div class="recipe-body">${buildRecipeBody(r)}</div>
+  `;
+  document.getElementById('close-recipe-btn').addEventListener('click', () => {
+    document.getElementById('modal').classList.remove('open');
+  });
+  document.getElementById('modal').classList.add('open');
+}
+
+// ════════════════════════════════════════════════
 //  NAV
 // ════════════════════════════════════════════════
 function showTab(name, btn) {
@@ -866,6 +1078,16 @@ function showTab(name, btn) {
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
   document.getElementById('sec-' + name).classList.add('visible');
   btn.classList.add('active');
+  if (name === 'buscar') {
+    loadAllRecipes().then(() => {
+      const input = document.getElementById('search-input');
+      if (!input.value.trim()) {
+        document.getElementById('search-results').innerHTML =
+          `<p class="search-empty">Escribe para buscar entre las ${allRecipes.length} recetas</p>`;
+      }
+      input.focus();
+    });
+  }
 }
 
 // ════════════════════════════════════════════════
