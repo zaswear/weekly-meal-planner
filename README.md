@@ -10,7 +10,7 @@
 ## Características
 
 - **Plan semanal generado al azar** — 7 días × 2 turnos (comida + cena), sin repetir receta
-- **1097 recetas en español** — base de datos local extraída de Arguiñano y El Comidista
+- **1097 recetas en español** — base de datos local en formato JSON
 - **Lista de la compra automática** — se genera a partir de los ingredientes de la semana, agrupada por categorías con checkboxes y contador de progreso
 - **Modal de receta** — ingredientes con cantidades y pasos de elaboración al pulsar cualquier comida
 - **Acordeón de recetas** — vista alternativa con todas las recetas de la semana expandibles
@@ -43,7 +43,7 @@ weekly-meal-planner/
 
 ## Base de datos de recetas
 
-Las recetas se sirven desde `recetas.json` — un fichero estático generado por `parse_recipes.py` a partir de los libros de cocina en formato markdown. Cada receta tiene la estructura:
+Las recetas se sirven desde `recetas.json` — un fichero estático generado por `parse_recipes.py` a partir de ficheros markdown. Cada receta tiene la estructura:
 
 ```json
 {
